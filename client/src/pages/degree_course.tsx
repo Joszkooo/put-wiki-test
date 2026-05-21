@@ -9,16 +9,15 @@ import {
 } from '@/components/ui/card.tsx';
 import {
   Table,
-  TableCaption,
   TableHeader,
   TableRow,
   TableHead,
   TableBody,
   TableCell,
 } from '@/components/ui/table.tsx';
-
 const data_url = '../assets/data/indexes_majors.json';
 import indexes from '../assets/data/indexes_majors.json';
+import TableOfOpinions from '@/components/opinions/tableOfOpinions';
 
 interface DegreeCourseSemester {
   number: number;
@@ -33,11 +32,10 @@ interface DegreeCourseWorstSubject {
   name: string;
   mark: number;
 }
-
 interface DegreeCourseData {
   name: string;
   description: string;
-  master_degree?: string;
+  master_degree: number;
   semesters: DegreeCourseSemester[];
   absolvent_future: string;
   worst_subjects: DegreeCourseWorstSubject[];
@@ -46,7 +44,7 @@ interface DegreeCourseData {
 const fallbackMajor: DegreeCourseData = {
   name: 'Kierunek studiów',
   description: 'Opis kierunku studiów',
-  master_degree: '',
+  master_degree: 0,
   semesters: [],
   absolvent_future: '',
   worst_subjects: [{ name: '', mark: 0 }],
@@ -55,8 +53,8 @@ const fallbackMajor: DegreeCourseData = {
 
 export default function DegreeCourse() {
   const [major, setMajor] = useState<DegreeCourseData>(fallbackMajor);
-  const [loading, setLoading] = useState<boolean>(true); // dodać podstronę ładowania
-  const [error, setError] = useState<string | null>(null); // przenieść na podstronę błędu
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function getData(): Promise<void> {
     setLoading(true);
@@ -110,18 +108,21 @@ export default function DegreeCourse() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{major.name}</CardTitle>
-        <CardDescription>
-          <p>{major.description}</p>
+        <CardTitle className="text-2xl font-bold" style={{ textAlign: 'center' }}>
+          {major.name}
+        </CardTitle>
+        <CardDescription className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent>
+            <p>{major.description}</p>
+          </CardContent>
+          <CardContent>
+            <p>{major.master_degree}</p>
+          </CardContent>
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
-        <p>{major.master_degree}</p>
-      </CardContent>
-
       <Table>
-        <TableCaption>Przedmioty w kierunku {major.name}</TableCaption>
+        <TableHeader>Przedmioty w kierunku {major.name}</TableHeader>
         <TableHeader>
           <TableRow>
             {major.semesters.length > 0 ? (
@@ -164,8 +165,8 @@ export default function DegreeCourse() {
           )}
         </TableBody>
       </Table>
-      <div className="container" style={{ display: 'flex', gap: '20px' }}>
-        <div className="left-column">
+      <div className="max-w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mx-auto left-column">
           <Card>
             <CardHeader>
               <CardTitle>Losy Absolwentów</CardTitle>
@@ -203,7 +204,7 @@ export default function DegreeCourse() {
             </CardContent>
           </Card>
         </div>
-        <div className="right-column">
+        <div className="flex-col right-column">
           <Card>
             <CardHeader>
               <CardTitle>Filtry Opinii</CardTitle>
@@ -212,28 +213,7 @@ export default function DegreeCourse() {
               <div />
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Opinie o kierunku</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {major.opinions.length > 0 ? (
-                major.opinions.map(function (opinion, index) {
-                  return (
-                    <Card key={index}>
-                      <CardTitle>{opinion.author}</CardTitle>
-                      <CardContent>
-                        <p>{opinion.content}</p>
-                        <p> Ocena: {opinion.rating}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              ) : (
-                <p>Brak opinii</p>
-              )}
-            </CardContent>
-          </Card>
+          <TableOfOpinions opinions={major.opinions} />
         </div>
       </div>
     </Card>
