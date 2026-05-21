@@ -2,7 +2,7 @@
   {
     "name": "Informatyka",
     "description": "Opis kierunku studiów",
-    "master_degree": "Studia magisterskie",
+    "master_degree": 23.45,
     "semesters": [
       {
         "number": 1,
@@ -56,6 +56,21 @@
         "author": "Anna Nowak",
         "content": "Dużo teorii, ale warto się poświęcić.",
         "rating": 4
+      },
+      {
+        "author": "Piotr Wiśniewski",
+        "content": "Niektóre przedmioty są bardzo trudne.",
+        "rating": 3
+      },
+      {
+        "author": "Katarzyna Zielińska",
+        "content": "Brakowało mi więcej zajęć praktycznych.",
+        "rating": 2
+      },
+      {
+        "author": "Marek Lewandowski",
+        "content": "Średni kierunek, ale można znaleźć ciekawe przedmioty.",
+        "rating": 3
       }
     ]
   }
