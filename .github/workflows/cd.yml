@@ -40,6 +40,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create tag
+        id: tag
         uses: anothrNick/github-tag-action@v1
         env:
           tag_prefix: v
@@ -78,7 +79,7 @@ jobs:
         with:
           context: ./client
           push: true
-          tags: ghcr.io/${{ github.repository }}/client:${{ needs.set-version.outputs.tag }}
+          tags: client:${{ needs.set-version.steps.tag.outputs.tag }}
 
   build-server:
     runs-on: ubuntu-latest
@@ -103,17 +104,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: setup QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
+        uses: docker/setup-qemu-action@v4.0.0
       
       - name: setup Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+        uses: docker/setup-buildx-action@v4.0.0
 
       - name : Build and push server image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+        uses: docker/build-push-action@v7.2.0
         with:
           context: ./server
           push: true
-          tags: ghcr.io/${{ github.repository }}/server:${{ needs.set-version.outputs.tag }}
+          tags: /server:${{ needs.set-version.steps.tag.outputs.tag }}
 
   release:
     runs-on: ubuntu-latest
@@ -133,7 +134,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.set-version.outputs.tag }}
-          name: Release ${{ needs.set-version.outputs.tag }}
-          body: |
-            Release for commit ${{ github.sha }}.
+          tag_name: ${{ needs.set-version.steps.tag.outputs.tag }}
+          name: Release ${{ needs.set-version.steps.tag.outputs.tag }}
