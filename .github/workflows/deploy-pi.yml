@@ -4,20 +4,20 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
-    runs-on: self-hosted # Wymusza użycie Twojego Raspberry Pi
+    runs-on: self-hosted
 
     steps:
       - name: Fetch new code, build and run
         run: |
           cd /home/joszko/put-wiki
-          
-          # Pobieramy zmiany
-          git fetch --all
-          
-          # Przełączamy się na tag nowo opublikowanego release'u
-          git checkout ${{ github.event.release.tag_name }}
-          
-          # Przebudowujemy i odpalamy kontenery w tle
+
+          git fetch origin --tags
+
+          git checkout -f tags/${{ github.event.release.tag_name }}
+
           docker compose up -d --build
