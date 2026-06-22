@@ -3,6 +3,11 @@ name: Deploy put-wiki to Raspberry Pi
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag/Version to deploy (e.g. v0.1.0)'
+        required: true
 
 concurrency:
   group: ${{ github.workflow }}
@@ -14,8 +19,10 @@ permissions:
 jobs:
   deploy:
     runs-on: [self-hosted, raspberry-pi]
+    environment: production
     env:
       PUT_WIKI_DIR: /home/joszko/put-wiki
+      DEPLOY_TAG: ${{ github.event.release.tag_name || github.event.inputs.version }}
 
     steps:
       - name: Fetch new code, pull images and run
@@ -25,6 +32,19 @@ jobs:
 
           git fetch origin --tags
 
-          git checkout -f tags/${{ github.event.release.tag_name }}
+          git checkout -f "tags/$DEPLOY_TAG"
 
-          TAG=${{ github.event.release.tag_name }} docker compose -f compose.yml -f compose.prod.yml up -d
+          # Bring down main proxy to free up ports
+          docker compose -f compose.yml -f compose.prod.yml stop proxy || true
+
+          # Start maintenance page
+          docker compose -f compose.maintenance.yml up -d
+
+          # Pull new images
+          TAG=$DEPLOY_TAG docker compose -f compose.yml -f compose.prod.yml pull
+
+          # Stop maintenance page
+          docker compose -f compose.maintenance.yml down
+
+          # Start the new stack (recreates containers with new images)
+          TAG=$DEPLOY_TAG docker compose -f compose.yml -f compose.prod.yml up -d --remove-orphans
