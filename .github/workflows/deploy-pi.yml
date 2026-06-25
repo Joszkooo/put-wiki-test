@@ -24,7 +24,7 @@ jobs:
     runs-on: [self-hosted, raspberry-pi]
     environment: production
     env:
-      PUT_WIKI_DIR: /home/joszko/put-wiki-test
+      PUT_WIKI_DIR: /home/joszko/put-wiki
       INPUT_CLIENT: ${{ github.event.inputs.client }}
       INPUT_SERVER: ${{ github.event.inputs.server }}
 
@@ -52,7 +52,6 @@ jobs:
           
           echo "CLIENT_TAG=$CLIENT_TAG" >> $GITHUB_ENV
           echo "SERVER_TAG=$SERVER_TAG" >> $GITHUB_ENV
-          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
           
       - name: Update codebase
         working-directory: ${{ env.PUT_WIKI_DIR }}
@@ -65,6 +64,7 @@ jobs:
         working-directory: ${{ env.PUT_WIKI_DIR }}
         shell: bash
         run: |
+          export GITHUB_REPOSITORY=${GITHUB_REPOSITORY,,}
           # Bring down main proxy to free up ports
           docker compose -f compose.yml -f compose.prod.yml stop proxy || true
           
@@ -75,12 +75,14 @@ jobs:
         working-directory: ${{ env.PUT_WIKI_DIR }}
         shell: bash
         run: |
+          export GITHUB_REPOSITORY=${GITHUB_REPOSITORY,,}
           docker compose -f compose.yml -f compose.prod.yml pull
 
       - name: Deploy new stack
         working-directory: ${{ env.PUT_WIKI_DIR }}
         shell: bash
         run: |
+          export GITHUB_REPOSITORY=${GITHUB_REPOSITORY,,}
           # Stop maintenance page
           docker compose -f compose.maintenance.yml down
           
